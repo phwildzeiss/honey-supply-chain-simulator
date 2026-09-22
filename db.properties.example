@@ -1,0 +1,5 @@
+db.host=<host>
+db.port=3306
+db.name=beehive_monitoring
+db.user=<user>
+db.password=<password>
