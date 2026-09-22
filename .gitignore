@@ -1,0 +1,17 @@
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Lokale, nicht zu committende DB-Zugangsdaten
+db.local.properties
+
+# OS
+.DS_Store
+Thumbs.db
