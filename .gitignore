@@ -9,8 +9,12 @@ target/
 .classpath
 .project
 
-# Lokale, nicht zu committende DB-Zugangsdaten
+# Lokale, nicht zu committende Zugangsdaten
 db.local.properties
+application-local.properties
+
+# Lokale Projektdokumentation (nicht eingecheckt)
+docs/
 
 # OS
 .DS_Store
