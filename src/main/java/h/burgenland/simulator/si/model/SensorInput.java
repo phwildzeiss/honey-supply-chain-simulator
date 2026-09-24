@@ -14,4 +14,9 @@ public record SensorInput(
         double luxMiddaySummer,
         double luxWinter,
         int honeyYieldKg) {
+
+    public SensorInput withWaterSourceDistance(double distanceMeters) {
+        return new SensorInput(summerTemperature, winterTemperature, humidity, precipitationMm, dryDays,
+                windCategoryDays, distanceMeters, luxMorningSummer, luxMiddaySummer, luxWinter, honeyYieldKg);
+    }
 }

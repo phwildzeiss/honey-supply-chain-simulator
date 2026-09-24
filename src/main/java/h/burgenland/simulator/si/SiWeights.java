@@ -4,8 +4,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Fixed AHP pairwise-comparison matrix for the eight SI criteria (Masterarbeit
- * Anhang D). Weights and the consistency ratio are derived from the matrix at
+ * Fixed AHP pairwise-comparison matrix for the eight SI criteria (thesis
+ * appendix D). Weights and the consistency ratio are derived from the matrix at
  * class load via Ahp, not hardcoded, so they stay traceable to the source data.
  */
 public final class SiWeights {

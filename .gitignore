@@ -9,11 +9,11 @@ target/
 .classpath
 .project
 
-# Lokale, nicht zu committende Zugangsdaten
+# Local credentials, never commit
 db.local.properties
 application-local.properties
 
-# Lokale Projektdokumentation (nicht eingecheckt)
+# Local project documentation (not committed)
 docs/
 
 # OS

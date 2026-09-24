@@ -17,12 +17,16 @@ public final class SiEvaluationService {
     private final WaterSourceRepository waterSourceRepository = new WaterSourceRepository();
 
     public SiScores evaluate(Apiary apiary, int year) throws SQLException {
+        return evaluate(aggregate(apiary, year));
+    }
+
+    public SensorInput aggregate(Apiary apiary, int year) throws SQLException {
         double waterSourceDistance = waterSourceRepository.findByApiary(apiary)
                 .orElseThrow(() -> new IllegalStateException("No water source found for " + apiary.name()))
                 .distance();
         try (Connection connection = DbConnectionFactory.connect()) {
-            SensorAggregationService aggregation = new SensorAggregationService(new SensorDataRepository(connection));
-            return evaluate(aggregation.aggregate(apiary.name(), year, waterSourceDistance));
+            return new SensorAggregationService(new SensorDataRepository(connection))
+                    .aggregate(apiary.name(), year, waterSourceDistance);
         }
     }
 

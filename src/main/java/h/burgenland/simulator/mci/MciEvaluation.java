@@ -12,10 +12,26 @@ public final class MciEvaluation {
 
     public static MciScores evaluate(MciInput input) {
         return new MciScores(
-                score(input.variety().suitability()),
-                score(input.region().suitability()),
-                score(input.certification().suitability()),
-                score(input.award().suitability()));
+                evaluateVariety(input.variety()),
+                evaluateRegion(input.region()),
+                evaluateCertification(input.certification()),
+                evaluateAward(input.award()));
+    }
+
+    public static double evaluateVariety(Variety variety) {
+        return score(variety.suitability());
+    }
+
+    public static double evaluateRegion(Region region) {
+        return score(region.suitability());
+    }
+
+    public static double evaluateCertification(Certification certification) {
+        return score(certification.suitability());
+    }
+
+    public static double evaluateAward(Award award) {
+        return score(award.suitability());
     }
 
     private static double score(Suitability suitability) {
