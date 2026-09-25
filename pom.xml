@@ -18,7 +18,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <web3j.version>4.12.2</web3j.version>
+        <web3j.version>5.0.2</web3j.version>
     </properties>
 
     <dependencies>
@@ -52,6 +52,21 @@
                 <groupId>org.web3j</groupId>
                 <artifactId>web3j-maven-plugin</artifactId>
                 <version>${web3j.version}</version>
+                <configuration>
+                    <abiSourceFiles>
+                        <directory>../honey-supply-chain/artifacts/contracts</directory>
+                        <includes>
+                            <include>ActorRegistry.sol/ActorRegistry.json</include>
+                            <include>ConsumerGateway.sol/ConsumerGateway.json</include>
+                            <include>HoneyToken.sol/HoneyToken.json</include>
+                            <include>PricingModel.sol/PricingModel.json</include>
+                            <include>QualityIndex.sol/QualityIndex.json</include>
+                            <include>SupplyChain.sol/SupplyChain.json</include>
+                        </includes>
+                    </abiSourceFiles>
+                    <packageName>h.burgenland.simulator.web3.generated</packageName>
+                    <sourceDestination>src/main/java</sourceDestination>
+                </configuration>
             </plugin>
         </plugins>
     </build>
