@@ -45,7 +45,34 @@ public class LabReportGenerator {
             case NORMAL -> normal();
             case GATEKEEPER -> withWaterContent(23.01 + random.nextDouble() * 2);
             case PHQI_EXCLUDED -> phqiExcluded();
+            case PREMIUM -> premium();
+            case STANDARD -> standard();
         };
+    }
+
+    public LabReportData generate(LabReportOutcome outcome, Variety varietyOverride) {
+        LabReportData data = generate(outcome);
+        return varietyOverride == null ? data : data.withVariety(varietyOverride);
+    }
+
+    private LabReportData standard() {
+        return new LabReportData(
+                16.8 + random.nextDouble() * 1.19, // 16.8 <= water <= 18 %
+                10.01 + random.nextDouble() * 4.99, // 10 < HMF <= 15 mg/kg
+                64 + random.nextDouble() * 20.9, // 64 <= invertase < 85 U/kg
+                false,
+                randomInRange(phMin, phMax),
+                randomVariety());
+    }
+
+    private LabReportData premium() {
+        return new LabReportData(
+                15.0 + random.nextDouble() * 1.7, // water content < 16.8 %
+                1 + random.nextDouble() * 9, // HMF <= 10 mg/kg
+                85 + random.nextDouble() * 45, // invertase >= 85 U/kg
+                false,
+                randomInRange(phMin, phMax),
+                Variety.PREMIUM_VARIETAL);
     }
 
     private LabReportData normal() {

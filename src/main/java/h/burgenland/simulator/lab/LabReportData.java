@@ -9,4 +9,8 @@ public record LabReportData(
         boolean naturallyEnzymeWeak,
         double ph,
         Variety variety) {
+
+    public LabReportData withVariety(Variety newVariety) {
+        return new LabReportData(waterContentPercent, hmf, invertaseActivity, naturallyEnzymeWeak, ph, newVariety);
+    }
 }

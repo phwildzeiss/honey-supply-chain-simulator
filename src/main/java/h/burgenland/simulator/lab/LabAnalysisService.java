@@ -2,6 +2,7 @@ package h.burgenland.simulator.lab;
 
 import h.burgenland.simulator.common.Scaling;
 import h.burgenland.simulator.mci.MciEvaluation;
+import h.burgenland.simulator.mci.Variety;
 import h.burgenland.simulator.phqi.PhqiEvaluation;
 import h.burgenland.simulator.phqi.model.PhqiInput;
 import h.burgenland.simulator.phqi.model.PhqiScores;
@@ -35,8 +36,8 @@ public class LabAnalysisService {
         this.labCredentials = labCredentials;
     }
 
-    public LabAnalysisResult analyze(long batchId, LabReportOutcome outcome) throws Exception {
-        LabReportData reportData = generator.generate(outcome);
+    public LabAnalysisResult analyze(long batchId, LabReportOutcome outcome, Variety varietyOverride) throws Exception {
+        LabReportData reportData = generator.generate(outcome, varietyOverride);
 
         byte[] pdf = LabReportPdf.render(batchId, reportData);
         String cid = pinataClient.uploadPdf(pdf, "laborbefund-" + batchId + ".pdf");
