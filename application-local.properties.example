@@ -8,3 +8,5 @@ simulator.web3.contracts.consumer-gateway=
 simulator.web3.lab-private-key=
 simulator.web3.award-body-private-key=
 simulator.web3.certification-body-private-key=
+
+simulator.pinata.jwt=
