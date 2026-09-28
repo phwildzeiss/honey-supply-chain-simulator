@@ -1,6 +1,7 @@
 package h.burgenland.simulator.lab;
 
 import h.burgenland.simulator.common.Scaling;
+import h.burgenland.simulator.common.StepTimings;
 import h.burgenland.simulator.mci.MciEvaluation;
 import h.burgenland.simulator.mci.Variety;
 import h.burgenland.simulator.phqi.PhqiEvaluation;
@@ -37,10 +38,13 @@ public class LabAnalysisService {
     }
 
     public LabAnalysisResult analyze(long batchId, LabReportOutcome outcome, Variety varietyOverride) throws Exception {
+        long start = System.nanoTime();
         LabReportData reportData = generator.generate(outcome, varietyOverride);
-
         byte[] pdf = LabReportPdf.render(batchId, reportData);
+        long afterRender = System.nanoTime();
+
         String cid = pinataClient.uploadPdf(pdf, "laborbefund-" + batchId + ".pdf");
+        long afterUpload = System.nanoTime();
 
         PhqiScores scores = PhqiEvaluation.evaluate(new PhqiInput(
                 reportData.waterContentPercent(), reportData.hmf(), reportData.invertaseActivity(),
@@ -61,7 +65,9 @@ public class LabAnalysisService {
         TransactionReceipt receipt = qualityIndex
                 .submitPHQIData(BigInteger.valueOf(batchId), phqiInput, variety, cid)
                 .send();
+        long end = System.nanoTime();
 
-        return new LabAnalysisResult(reportData, cid, receipt.getTransactionHash(), receipt.getGasUsed());
+        return new LabAnalysisResult(reportData, cid, receipt.getTransactionHash(), receipt.getGasUsed(),
+                StepTimings.of(start, afterRender, afterUpload, end));
     }
 }

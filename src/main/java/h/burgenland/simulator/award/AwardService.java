@@ -1,6 +1,7 @@
 package h.burgenland.simulator.award;
 
 import h.burgenland.simulator.common.Scaling;
+import h.burgenland.simulator.common.StepTimings;
 import h.burgenland.simulator.lab.PinataClient;
 import h.burgenland.simulator.mci.Award;
 import h.burgenland.simulator.mci.MciEvaluation;
@@ -35,20 +36,26 @@ public class AwardService {
     }
 
     public AwardResult submitAward(long batchId, Award force) throws Exception {
+        long start = System.nanoTime();
         Award award = generator.generate(force);
         BigInteger level = BigInteger.valueOf(Scaling.toContractScale(MciEvaluation.evaluateAward(award)));
 
+        byte[] pdf = award != Award.NONE ? AwardPdf.render(batchId, award) : null;
+        long afterRender = System.nanoTime();
+
         String cid = "";
-        if (award != Award.NONE) {
-            byte[] pdf = AwardPdf.render(batchId, award);
+        if (pdf != null) {
             cid = pinataClient.uploadPdf(pdf, "praemierung-" + batchId + ".pdf");
         }
+        long afterUpload = System.nanoTime();
 
         QualityIndex qualityIndex = QualityIndex.load(
                 contractAddresses.qualityIndex(), web3j, awardBodyCredentials, new DefaultGasProvider());
 
         TransactionReceipt receipt = qualityIndex.submitAward(BigInteger.valueOf(batchId), level, cid).send();
+        long end = System.nanoTime();
 
-        return new AwardResult(award, cid, receipt.getTransactionHash(), receipt.getGasUsed());
+        return new AwardResult(award, cid, receipt.getTransactionHash(), receipt.getGasUsed(),
+                StepTimings.of(start, afterRender, afterUpload, end));
     }
 }

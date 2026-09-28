@@ -1,6 +1,7 @@
 package h.burgenland.simulator.certification;
 
 import h.burgenland.simulator.common.Scaling;
+import h.burgenland.simulator.common.StepTimings;
 import h.burgenland.simulator.lab.PinataClient;
 import h.burgenland.simulator.mci.Certification;
 import h.burgenland.simulator.mci.MciEvaluation;
@@ -35,6 +36,7 @@ public class CertificationService {
     }
 
     public CertificationResult certify(String beekeeperAddress, Certification force) throws Exception {
+        long start = System.nanoTime();
         Certification certification = generator.generate(force);
         BigInteger organicScore = BigInteger.valueOf(
                 Scaling.toContractScale(MciEvaluation.evaluateCertification(certification)));
@@ -42,15 +44,23 @@ public class CertificationService {
         ActorRegistry actorRegistry = ActorRegistry.load(
                 contractAddresses.actorRegistry(), web3j, certificationBodyCredentials, new DefaultGasProvider());
 
+        // The name lookup is a read call, counted as part of creating the document.
+        byte[] pdf = certification != Certification.NONE
+                ? CertificationPdf.render(lookupName(actorRegistry, beekeeperAddress), certification)
+                : null;
+        long afterRender = System.nanoTime();
+
         String cid = "";
-        if (certification != Certification.NONE) {
-            byte[] pdf = CertificationPdf.render(lookupName(actorRegistry, beekeeperAddress), certification);
+        if (pdf != null) {
             cid = pinataClient.uploadPdf(pdf, "zertifikat-" + beekeeperAddress + ".pdf");
         }
+        long afterUpload = System.nanoTime();
 
         TransactionReceipt receipt = actorRegistry.setCertification(beekeeperAddress, cid, organicScore).send();
+        long end = System.nanoTime();
 
-        return new CertificationResult(certification, cid, receipt.getTransactionHash(), receipt.getGasUsed());
+        return new CertificationResult(certification, cid, receipt.getTransactionHash(), receipt.getGasUsed(),
+                StepTimings.of(start, afterRender, afterUpload, end));
     }
 
     private String lookupName(ActorRegistry actorRegistry, String beekeeperAddress) throws Exception {
