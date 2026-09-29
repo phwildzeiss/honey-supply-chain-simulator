@@ -8,13 +8,13 @@ import h.burgenland.simulator.phqi.PhqiEvaluation;
 import h.burgenland.simulator.phqi.model.PhqiInput;
 import h.burgenland.simulator.phqi.model.PhqiScores;
 import h.burgenland.simulator.web3.ContractAddresses;
+import h.burgenland.simulator.web3.ContractTransactions;
 import h.burgenland.simulator.web3.generated.QualityIndex;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Credentials;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.web3j.tx.gas.DefaultGasProvider;
 
 import java.math.BigInteger;
 
@@ -27,14 +27,17 @@ public class LabAnalysisService {
     private final Web3j web3j;
     private final ContractAddresses contractAddresses;
     private final Credentials labCredentials;
+    private final ContractTransactions transactions;
 
     public LabAnalysisService(LabReportGenerator generator, PinataClient pinataClient, Web3j web3j,
-                               ContractAddresses contractAddresses, Credentials labCredentials) {
+                               ContractAddresses contractAddresses, Credentials labCredentials,
+                               ContractTransactions transactions) {
         this.generator = generator;
         this.pinataClient = pinataClient;
         this.web3j = web3j;
         this.contractAddresses = contractAddresses;
         this.labCredentials = labCredentials;
+        this.transactions = transactions;
     }
 
     public LabAnalysisResult analyze(long batchId, LabReportOutcome outcome, Variety varietyOverride) throws Exception {
@@ -51,7 +54,8 @@ public class LabAnalysisService {
                 reportData.naturallyEnzymeWeak()));
 
         QualityIndex qualityIndex = QualityIndex.load(
-                contractAddresses.qualityIndex(), web3j, labCredentials, new DefaultGasProvider());
+                contractAddresses.qualityIndex(), web3j, transactions.managerFor(labCredentials),
+                transactions.gasProvider());
 
         QualityIndex.PHQIInput phqiInput = new QualityIndex.PHQIInput(
                 BigInteger.valueOf(Scaling.toContractScale(scores.waterContent())),
