@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 @Component
 @ConditionalOnProperty("simulator.pinata.jwt")
@@ -28,11 +29,19 @@ public class PinataClient {
     }
 
     public String uploadPdf(byte[] pdfBytes, String fileName) throws IOException, InterruptedException {
+        return uploadBytes(pdfBytes, fileName, "application/pdf");
+    }
+
+    public String uploadJson(String json, String fileName) throws IOException, InterruptedException {
+        return uploadBytes(json.getBytes(StandardCharsets.UTF_8), fileName, "application/json");
+    }
+
+    private String uploadBytes(byte[] data, String fileName, String contentType) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(PIN_FILE_URL))
                 .header("Authorization", "Bearer " + jwt)
                 .header("Content-Type", "multipart/form-data; boundary=" + BOUNDARY)
-                .POST(HttpRequest.BodyPublishers.ofByteArray(buildMultipartBody(pdfBytes, fileName)))
+                .POST(HttpRequest.BodyPublishers.ofByteArray(buildMultipartBody(data, fileName, contentType)))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -42,12 +51,12 @@ public class PinataClient {
         return objectMapper.readTree(response.body()).get("IpfsHash").asText();
     }
 
-    private byte[] buildMultipartBody(byte[] pdfBytes, String fileName) throws IOException {
+    private byte[] buildMultipartBody(byte[] data, String fileName, String contentType) throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         out.write(("--" + BOUNDARY + "\r\n").getBytes());
         out.write(("Content-Disposition: form-data; name=\"file\"; filename=\"" + fileName + "\"\r\n").getBytes());
-        out.write("Content-Type: application/pdf\r\n\r\n".getBytes());
-        out.write(pdfBytes);
+        out.write(("Content-Type: " + contentType + "\r\n\r\n").getBytes());
+        out.write(data);
         out.write(("\r\n--" + BOUNDARY + "--\r\n").getBytes());
         return out.toByteArray();
     }

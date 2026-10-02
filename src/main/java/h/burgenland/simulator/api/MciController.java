@@ -15,11 +15,13 @@ public class MciController {
 
     @PostMapping("/origin")
     public MciOriginResponse origin(@RequestBody MciOriginRequest request) {
-        if (request.variety() == null || request.region() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "variety and region are required");
+        if (request.region() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "region is required");
         }
-        return new MciOriginResponse(
-                Scaling.toContractScale(MciEvaluation.evaluateVariety(request.variety())),
-                Scaling.toContractScale(MciEvaluation.evaluateRegion(request.region())));
+        Integer varietyScore = request.variety() != null
+                ? Scaling.toContractScale(MciEvaluation.evaluateVariety(request.variety()))
+                : null;
+        int regionScore = Scaling.toContractScale(MciEvaluation.evaluateRegion(request.region()));
+        return new MciOriginResponse(varietyScore, regionScore);
     }
 }
