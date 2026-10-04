@@ -11,15 +11,31 @@ class CertificationGeneratorTest {
 
     @Test
     void forcedValueIsReturnedDirectly() {
-        CertificationGenerator generator = new CertificationGenerator(0.05, 0.10, 0.15, new Random(1));
+        CertificationGenerator generator = new CertificationGenerator(0.05, 0.10, 0.15, 0.40, 0.60, 0.80, new Random(1));
         assertEquals(Certification.ASSOCIATION_ORGANIC, generator.generate(Certification.ASSOCIATION_ORGANIC));
     }
 
     @Test
     void zeroProbabilitiesAlwaysReturnNone() {
-        CertificationGenerator generator = new CertificationGenerator(0.0, 0.0, 0.0, new Random(2));
+        CertificationGenerator generator = new CertificationGenerator(0.0, 0.0, 0.0, 0.40, 0.60, 0.80, new Random(2));
         for (int i = 0; i < 50; i++) {
             assertEquals(Certification.NONE, generator.generate(null));
+        }
+    }
+
+    @Test
+    void generateForNeverPassesWithZeroPassProbability() {
+        CertificationGenerator generator = new CertificationGenerator(0.05, 0.10, 0.15, 0.0, 0.0, 0.0, new Random(3));
+        for (int i = 0; i < 50; i++) {
+            assertEquals(Certification.NONE, generator.generateFor(Certification.ASSOCIATION_ORGANIC));
+        }
+    }
+
+    @Test
+    void generateForAlwaysPassesWithFullPassProbability() {
+        CertificationGenerator generator = new CertificationGenerator(0.05, 0.10, 0.15, 1.0, 1.0, 1.0, new Random(4));
+        for (int i = 0; i < 50; i++) {
+            assertEquals(Certification.EU_ORGANIC, generator.generateFor(Certification.EU_ORGANIC));
         }
     }
 }

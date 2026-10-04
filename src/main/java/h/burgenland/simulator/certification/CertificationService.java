@@ -38,9 +38,13 @@ public class CertificationService {
         this.transactions = transactions;
     }
 
-    public CertificationResult certify(String beekeeperAddress, Certification force) throws Exception {
+    public CertificationResult certify(String beekeeperAddress, Certification force, Certification requested) throws Exception {
         long start = System.nanoTime();
-        Certification certification = generator.generate(force);
+        Certification certification = force != null
+                ? generator.generate(force)
+                : requested != null
+                    ? generator.generateFor(requested)
+                    : generator.generate(null);
         BigInteger organicScore = BigInteger.valueOf(
                 Scaling.toContractScale(MciEvaluation.evaluateCertification(certification)));
 

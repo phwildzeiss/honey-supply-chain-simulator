@@ -27,7 +27,7 @@ public class CertificationController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "beekeeperAddress is required");
         }
         try {
-            return certificationService.certify(request.beekeeperAddress(), request.force());
+            return certificationService.certify(request.beekeeperAddress(), request.force(), request.requested());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Certification failed: " + e.getMessage(), e);
         }
