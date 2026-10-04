@@ -1,5 +1,6 @@
 package h.burgenland.simulator.api;
 
+import h.burgenland.simulator.sensors.NormalReadingProfile;
 import h.burgenland.simulator.sensors.SensorReadingGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,8 @@ class SensorControllerTest {
 
     @BeforeEach
     void setUp() {
-        SensorReadingGenerator generator = new SensorReadingGenerator(40, 60, 0.0, new Random(1));
+        SensorReadingGenerator generator = new SensorReadingGenerator(
+                40, 60, 0.0, new NormalReadingProfile(18, 8, -5, 90, 45, 10, 300), new Random(1));
         mockMvc = MockMvcBuilders.standaloneSetup(new SensorController(generator, generator, generator)).build();
     }
 

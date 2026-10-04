@@ -7,13 +7,15 @@ public class SensorReadingGenerator {
     private final int maxSafeTemperatureCelsius;
     private final int maxSafeDurationMinutes;
     private final double violationProbability;
+    private final NormalReadingProfile normalProfile;
     private final Random random;
 
     public SensorReadingGenerator(int maxSafeTemperatureCelsius, int maxSafeDurationMinutes,
-                                   double violationProbability, Random random) {
+                                   double violationProbability, NormalReadingProfile normalProfile, Random random) {
         this.maxSafeTemperatureCelsius = maxSafeTemperatureCelsius;
         this.maxSafeDurationMinutes = maxSafeDurationMinutes;
         this.violationProbability = violationProbability;
+        this.normalProfile = normalProfile;
         this.random = random;
     }
 
@@ -29,8 +31,20 @@ public class SensorReadingGenerator {
     }
 
     private SensorReading normalReading() {
-        int temperature = 10 + random.nextInt(maxSafeTemperatureCelsius - 10);
-        int duration = random.nextInt(maxSafeDurationMinutes);
+        int temperature = clamp(
+                gaussian(normalProfile.temperatureMean(), normalProfile.temperatureStdDev()),
+                normalProfile.minTemperature(), maxSafeTemperatureCelsius - 1);
+        int duration = clamp(
+                gaussian(normalProfile.durationMean(), normalProfile.durationStdDev()),
+                normalProfile.minDurationMinutes(), normalProfile.maxDurationMinutes());
         return new SensorReading(temperature, duration, false);
+    }
+
+    private int gaussian(double mean, double stdDev) {
+        return (int) Math.round(mean + stdDev * random.nextGaussian());
+    }
+
+    private int clamp(int value, int min, int max) {
+        return Math.max(min, Math.min(max, value));
     }
 }
