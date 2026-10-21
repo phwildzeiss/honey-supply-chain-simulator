@@ -69,7 +69,7 @@
                         <directory>../honey-supply-chain/artifacts/contracts</directory>
                         <includes>
                             <include>ActorRegistry.sol/ActorRegistry.json</include>
-                            <include>ConsumerGateway.sol/ConsumerGateway.json</include>
+                            <include>ProductGateway.sol/ProductGateway.json</include>
                             <include>HoneyToken.sol/HoneyToken.json</include>
                             <include>PricingModel.sol/PricingModel.json</include>
                             <include>QualityIndex.sol/QualityIndex.json</include>
