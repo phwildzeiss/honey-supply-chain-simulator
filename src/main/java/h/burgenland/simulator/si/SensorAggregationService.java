@@ -21,14 +21,12 @@ public final class SensorAggregationService {
         LocalDateTime summerEnd = LocalDateTime.of(year, 8, 31, 0, 0);
         LocalDateTime yearStart = LocalDateTime.of(year, 1, 1, 0, 0);
         LocalDateTime yearEnd = LocalDateTime.of(year, 12, 31, 0, 0);
-        LocalDateTime winterStart = LocalDateTime.of(year, 10, 1, 0, 0);
-        LocalDateTime winterEnd = LocalDateTime.of(year + 1, 3, 1, 0, 0);
         LocalDateTime forageStart = LocalDateTime.of(year, 4, 1, 0, 0);
         LocalDateTime forageEnd = LocalDateTime.of(year, 8, 1, 0, 0);
 
         return new SensorInput(
                 repository.averageOfDailyMaxTemperature(station, summerStart, summerEnd),
-                repository.averageOfDailyAverageTemperature(station, winterStart, winterEnd),
+                averageWinterTemperature(station, year),
                 repository.averageOfDailyAverageHumidity(station, yearStart, yearEnd),
                 repository.totalPrecipitation(station, yearStart, yearEnd),
                 longestDryPeriod(repository.dailyRainSums(station, yearStart, yearEnd)),
@@ -71,6 +69,15 @@ public final class SensorAggregationService {
             lastWeight = currentWeight;
         }
         return totalHarvest;
+    }
+
+    // Jän/Feb und Okt/Dez desselben Jahres, statt Jän/Feb des Folgejahres (das es im Datensatz nicht gibt).
+    private double averageWinterTemperature(String station, int year) throws SQLException {
+        double januaryToFebruary = repository.averageOfDailyAverageTemperature(station,
+                LocalDateTime.of(year, 1, 1, 0, 0), LocalDateTime.of(year, 3, 1, 0, 0));
+        double octoberToDecember = repository.averageOfDailyAverageTemperature(station,
+                LocalDateTime.of(year, 10, 1, 0, 0), LocalDateTime.of(year + 1, 1, 1, 0, 0));
+        return (januaryToFebruary + octoberToDecember) / 2.0;
     }
 
     private double averageWinterLightIntensity(String station, int year) throws SQLException {
