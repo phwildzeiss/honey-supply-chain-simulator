@@ -9,5 +9,5 @@ public record ContractAddresses(
         String qualityIndex,
         String pricingModel,
         String supplyChain,
-        String consumerGateway) {
+        String productGateway) {
 }
