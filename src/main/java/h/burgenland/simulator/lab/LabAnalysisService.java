@@ -40,9 +40,12 @@ public class LabAnalysisService {
         this.transactions = transactions;
     }
 
-    public LabAnalysisResult analyze(long batchId, LabReportOutcome outcome, Variety varietyOverride) throws Exception {
+    public LabAnalysisResult analyze(long batchId, LabReportOutcome outcome, Variety varietyOverride,
+                                      LabReportData previousReport) throws Exception {
         long start = System.nanoTime();
-        LabReportData reportData = generator.generate(outcome, varietyOverride);
+        LabReportData reportData = previousReport != null
+                ? generator.degrade(previousReport)
+                : generator.generate(outcome, varietyOverride);
         byte[] pdf = LabReportPdf.render(batchId, reportData);
         long afterRender = System.nanoTime();
 

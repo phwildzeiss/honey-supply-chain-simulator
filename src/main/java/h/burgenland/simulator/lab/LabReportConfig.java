@@ -22,9 +22,10 @@ public class LabReportConfig {
             @Value("${simulator.lab-report.naturally-enzyme-weak-probability:0.1}") double naturallyEnzymeWeakProbability,
             @Value("${simulator.lab-report.variety-premium-probability:0.1}") double varietyPremiumProbability,
             @Value("${simulator.lab-report.variety-local-probability:0.4}") double varietyLocalProbability,
-            @Value("${simulator.random-seed:42}") long seed) {
+            @Value("${simulator.random-seed:42}") long seed,
+            @Value("${simulator.case-study-mode:false}") boolean caseStudyMode) {
         return new LabReportGenerator(waterContentMinPercent, waterContentMaxPercent, hmfMinMgPerKg, hmfMaxMgPerKg,
                 invertaseMinUPerKg, invertaseMaxUPerKg, phMin, phMax, naturallyEnzymeWeakProbability,
-                varietyPremiumProbability, varietyLocalProbability, new Random(seed + 3));
+                varietyPremiumProbability, varietyLocalProbability, new Random(seed + 3), caseStudyMode);
     }
 }

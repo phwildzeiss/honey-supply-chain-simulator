@@ -18,14 +18,15 @@ public class LabReportGenerator {
     private final double varietyPremiumProbability;
     private final double varietyLocalProbability;
     private final Random random;
+    private final boolean caseStudyMode;
 
     public LabReportGenerator(double waterContentMinPercent, double waterContentMaxPercent,
-                               double hmfMinMgPerKg, double hmfMaxMgPerKg,
-                               double invertaseMinUPerKg, double invertaseMaxUPerKg,
-                               double phMin, double phMax,
-                               double naturallyEnzymeWeakProbability,
-                               double varietyPremiumProbability, double varietyLocalProbability,
-                               Random random) {
+            double hmfMinMgPerKg, double hmfMaxMgPerKg,
+            double invertaseMinUPerKg, double invertaseMaxUPerKg,
+            double phMin, double phMax,
+            double naturallyEnzymeWeakProbability,
+            double varietyPremiumProbability, double varietyLocalProbability,
+            Random random, boolean caseStudyMode) {
         this.waterContentMinPercent = waterContentMinPercent;
         this.waterContentMaxPercent = waterContentMaxPercent;
         this.hmfMinMgPerKg = hmfMinMgPerKg;
@@ -38,9 +39,25 @@ public class LabReportGenerator {
         this.varietyPremiumProbability = varietyPremiumProbability;
         this.varietyLocalProbability = varietyLocalProbability;
         this.random = random;
+        this.caseStudyMode = caseStudyMode;
     }
 
+    private static final LabReportData CASE_STUDY_PREMIUM = new LabReportData(15.0, 5.0, 100.0, false, 4.0,
+            Variety.PREMIUM_VARIETAL);
+    private static final LabReportData CASE_STUDY_STANDARD = new LabReportData(17.5, 12.0, 75.0, false, 4.0,
+            Variety.MIXED_BLOSSOM);
+    private static final LabReportData CASE_STUDY_GATEKEEPER = new LabReportData(24.0, 12.0, 75.0, false, 4.0,
+            Variety.MIXED_BLOSSOM);
+    private static final LabReportData CASE_STUDY_PHQI_EXCLUDED = new LabReportData(21.0, 12.0, 75.0, false, 4.0,
+            Variety.PREMIUM_VARIETAL);
+
     public LabReportData generate(LabReportOutcome outcome) {
+        if (caseStudyMode) {
+            LabReportData fixed = fixedForCaseStudy(outcome);
+            if (fixed != null) {
+                return fixed;
+            }
+        }
         return switch (outcome) {
             case NORMAL -> normal();
             case GATEKEEPER -> withWaterContent(23.01 + random.nextDouble() * 2);
@@ -50,16 +67,39 @@ public class LabReportGenerator {
         };
     }
 
+    private LabReportData fixedForCaseStudy(LabReportOutcome outcome) {
+        return switch (outcome) {
+            case PREMIUM -> CASE_STUDY_PREMIUM;
+            case STANDARD -> CASE_STUDY_STANDARD;
+            case GATEKEEPER -> CASE_STUDY_GATEKEEPER;
+            case PHQI_EXCLUDED -> CASE_STUDY_PHQI_EXCLUDED;
+            case NORMAL -> null;
+        };
+    }
+
     public LabReportData generate(LabReportOutcome outcome, Variety varietyOverride) {
         LabReportData data = generate(outcome);
         return varietyOverride == null ? data : data.withVariety(varietyOverride);
     }
 
+    private static final double TEMPERATURE_VIOLATION_HMF_INCREASE = 5.0;
+    private static final double TEMPERATURE_VIOLATION_INVERTASE_DECREASE = 10.0;
+
+    public LabReportData degrade(LabReportData previous) {
+        return new LabReportData(
+                previous.waterContentPercent(),
+                previous.hmf() + TEMPERATURE_VIOLATION_HMF_INCREASE,
+                Math.max(0, previous.invertaseActivity() - TEMPERATURE_VIOLATION_INVERTASE_DECREASE),
+                previous.naturallyEnzymeWeak(),
+                previous.ph(),
+                previous.variety());
+    }
+
     private LabReportData standard() {
         return new LabReportData(
-                16.8 + random.nextDouble() * 1.19, // 16.8 <= water <= 18 %
-                10.01 + random.nextDouble() * 4.99, // 10 < HMF <= 15 mg/kg
-                64 + random.nextDouble() * 20.9, // 64 <= invertase < 85 U/kg
+                16.8 + random.nextDouble() * 1.19,
+                10.01 + random.nextDouble() * 4.99,
+                64 + random.nextDouble() * 20.9,
                 false,
                 randomInRange(phMin, phMax),
                 randomVariety());
@@ -67,9 +107,9 @@ public class LabReportGenerator {
 
     private LabReportData premium() {
         return new LabReportData(
-                15.0 + random.nextDouble() * 1.7, // water content < 16.8 %
-                1 + random.nextDouble() * 9, // HMF <= 10 mg/kg
-                85 + random.nextDouble() * 45, // invertase >= 85 U/kg
+                15.0 + random.nextDouble() * 1.7,
+                1 + random.nextDouble() * 9,
+                85 + random.nextDouble() * 45,
                 false,
                 randomInRange(phMin, phMax),
                 Variety.PREMIUM_VARIETAL);
@@ -96,16 +136,16 @@ public class LabReportGenerator {
         int criterion = random.nextInt(3);
         return switch (criterion) {
             case 0 -> new LabReportData(
-                    20.01 + random.nextDouble() * 2.99, // >20 %, aber <=23 % - Ausschluss ohne harten Gatekeeper
+                    20.01 + random.nextDouble() * 2.99,
                     base.hmf(), base.invertaseActivity(), base.naturallyEnzymeWeak(), base.ph(), base.variety());
             case 1 -> new LabReportData(
-                    base.waterContentPercent(), 40.01 + random.nextDouble() * 10, // > 40 mg/kg
+                    base.waterContentPercent(), 40.01 + random.nextDouble() * 10,
                     base.invertaseActivity(), base.naturallyEnzymeWeak(), base.ph(), base.variety());
             default -> {
                 double belowThreshold = base.naturallyEnzymeWeak() ? 45 : 64;
                 yield new LabReportData(
                         base.waterContentPercent(), base.hmf(),
-                        random.nextDouble() * (belowThreshold - 0.1), // knapp unter der jeweiligen Invertase-Grenze
+                        random.nextDouble() * (belowThreshold - 0.1),
                         base.naturallyEnzymeWeak(), base.ph(), base.variety());
             }
         };

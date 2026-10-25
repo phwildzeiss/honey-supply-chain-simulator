@@ -29,7 +29,7 @@ public class LabAnalysisController {
         }
         LabReportOutcome outcome = request.force() != null ? request.force() : LabReportOutcome.NORMAL;
         try {
-            return labAnalysisService.analyze(request.batchId(), outcome, request.variety());
+            return labAnalysisService.analyze(request.batchId(), outcome, request.variety(), request.previousReport());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Lab analysis failed: " + e.getMessage(), e);
         }
